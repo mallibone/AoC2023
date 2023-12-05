@@ -52,21 +52,21 @@ getInput 4
 // part 2
 let addOrUpdate (state:Dictionary<int,int>) indexvalue mult =
     if state.ContainsKey(indexvalue) then
-        state[indexvalue] <- state[indexvalue] + 1 * mult
+        state[indexvalue] <- state[indexvalue] + mult
     else
-        state.Add(indexvalue, 1 * mult)
+        state.Add(indexvalue, mult)
 let getCopies (state:Dictionary<int,int>) (index:int, card:Card) =
     addOrUpdate state index 1
     card.WinningNumbers 
-    |> Seq.mapi (fun i v -> i, v) 
-    |> Seq.filter(fun (i, v) -> card.Numbers |> Seq.exists ((=) v)) 
-    |> Seq.map (fun (i, _) -> i)
-    |> Seq.iter (fun i -> addOrUpdate state (index+i) state[index])
+    // |> Seq.mapi (fun i v -> i, v) 
+    |> Seq.filter(fun  v -> card.Numbers |> Seq.exists ((=) v)) 
+    // |> Seq.map (fun (i, _) -> i)
+    |> Seq.iteri (fun i _ -> addOrUpdate state (index+i+1) state[index])
 
     state
     
-// getInput 4
-getTestInput 4
+getInput 4
+// getTestInput 4
 |> Array.map parseGames
 |> Array.mapi (fun i v -> i, v)
 |> Array.fold getCopies (new Dictionary<int,int>())
