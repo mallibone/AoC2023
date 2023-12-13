@@ -81,4 +81,4 @@ getInput 5
 // getTestInput 5
 |> parsePairSeedInput
 |> mapSeeds
-|> Seq.min
+|> PSeq.min
