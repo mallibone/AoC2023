@@ -8,12 +8,12 @@ open System.Collections.Generic
 open FSharp.Collections.ParallelSeq
 open System.Collections.Concurrent
 
-let getTestInput (day:int) =
+let getTestInput (day:string) =
     let filename = Path.Combine(__SOURCE_DIRECTORY__, $"Input/TestDay{day}.txt")
     File.ReadAllLines(filename)
     // File.ReadAllText(filename)
 
-let getInput (day:int) =
+let getInput (day:string) =
     let filename = Path.Combine(__SOURCE_DIRECTORY__, $"Input/Day{day}.txt")
     File.ReadAllLines(filename)
     // File.ReadAllText(filename)
@@ -36,6 +36,9 @@ let parseInput (input:string array) =
     let nodeMap = input |> Array.skip 2 |> Array.map parseNodes |> Map.ofArray
     (path, nodeMap)
 
+
+
+// part 1
 let findGoal ((steps:int array), (nodeMap:Map<string,string array>)) = 
     let rec findGoalRec totalCount currentNode count (steps:int array) (nodeMap:Map<string,string array>) =
         printfn "currentNode: %s, count: %d" currentNode count
@@ -48,14 +51,43 @@ let findGoal ((steps:int array), (nodeMap:Map<string,string array>)) =
             findGoalRec (totalCount+1) nextNode nextCount steps nodeMap
     findGoalRec 0 "AAA" 0 steps nodeMap
 
-
-// part 1
-// getInput 8
-getTestInput 8
+getInput "8"
+// getTestInput "8"
 |> parseInput
-|> findGoal "AAA" 0
+|> findGoal
 
 // part 2
-// getInput 8
-// getTestInput 8
+
+let findGoalGhostMode ((steps:int array), (nodeMap:Map<string,string array>)) =
+    let rec findGoalGhostModeRec (totalCount:int) (currentNode:string) count (steps:int array) (nodeMap:Map<string,string array>) =
+        match currentNode[2] = 'Z'  with
+        | true -> totalCount
+        | _ -> 
+            let nextNode = (nodeMap[currentNode])[steps[count]]
+            let nextCount = (count + 1) % (steps.Length)
+            findGoalGhostModeRec (totalCount+1) nextNode nextCount steps nodeMap
+
+    let startNodes = nodeMap |> Map.keys |> Seq.filter (fun node -> node[2] = 'A') |> Array.ofSeq
+    startNodes |> Array.map (fun startNode -> startNode, (findGoalGhostModeRec 0 startNode 0 steps nodeMap))
+
+let rec greatestCommonDivisor a b =
+    if b = 0L then a
+    else greatestCommonDivisor b (a % b)
+
+let leastCommonMultiple a b =
+    a * b / greatestCommonDivisor a b
+
+let findLCM list =
+    match list with
+    | [] -> 0L
+    | hd :: tl -> List.fold leastCommonMultiple hd tl
+
+
+getInput "8"
+// getTestInput "8b"
+|> parseInput
+|> findGoalGhostMode
+|> Seq.map (snd >> int64)
+|> Seq.toList
+|> findLCM
 
